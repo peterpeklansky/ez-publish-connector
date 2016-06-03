@@ -11,8 +11,8 @@ public class EzConstant {
 	public static final String AUTO_RENEW = "auto_renew";
 	public static final String FOLLOWUP_RATE = "followup_rate";
 	public static final String FOLLOWUP_TERM = "followup_term";
-	public static final Object DESTINATION_CONTENT_ID = "destinationContentId";
-	public static final Object DESTINATION_CONTENT_IDS = "destinationContentIds";
+	public static final String DESTINATION_CONTENT_ID = "destinationContentId";
+	public static final String DESTINATION_CONTENT_IDS = "destinationContentIds";
 	public static final String PRICE_ZONE = "price_zone";
 	public static final String CURRENCY = "currency";
 	public static final String DISPATCH = "dispatch";
@@ -24,8 +24,8 @@ public class EzConstant {
 	public static final String FEATURES = "features";
 	public static final String QUANTITY = "quantity";
 	public static final String UNIT = "unit";
-	public static final Object OPTIONS = "options";
+	public static final String OPTIONS = "options";
 	public static final String TAX_PROFILE = "tax_profile";
 	public static final String TYPE = "type";
-	public static final String OLD_CODE = "old_code";
+	public static final String LEGACY_CODES = "legacy_codes";
 }
