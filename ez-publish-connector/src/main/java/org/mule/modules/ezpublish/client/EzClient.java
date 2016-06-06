@@ -44,7 +44,6 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
-
 @SuppressWarnings("unchecked")
 public class EzClient {
 	
@@ -151,7 +150,7 @@ public class EzClient {
 			}
 		} catch (IOException | NullPointerException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed");
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
 		}
 		
 		return map;
@@ -484,7 +483,7 @@ public class EzClient {
 			}
 		} catch (IOException | NullPointerException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed");
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
 		}
 		
 		return map;
@@ -510,7 +509,7 @@ public class EzClient {
 			map = convertJsonPojoToMap(pojo);
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed");
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
 		}
 		
 		return map;
@@ -528,7 +527,6 @@ public class EzClient {
 		Builder request = webResource.path(path).header(HTTP_ACCEPT, HTTP_APPLICATION_VND_EZ_API_CONTENT_JSON);
 		ClientResponse clientResponse = request.get(ClientResponse.class);
 		validateResponse(clientResponse);
-		//EzContentObjectsResponse response = clientResponse.getEntity(EzContentObjectsResponse.class);
 		String response = clientResponse.getEntity(String.class);
 		EzContentObjectsResponse responseObj = null;
 		
@@ -536,7 +534,7 @@ public class EzClient {
 			responseObj = jsonObjectMapper.readValue(response, EzContentObjectsResponse.class);
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed");
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
 		}
 		
 		return responseObj;
@@ -552,7 +550,6 @@ public class EzClient {
 		Builder request = webResource.path(path).header(HTTP_ACCEPT, HTTP_APPLICATION_VND_EZ_API_LOCATION_JSON);
 		ClientResponse clientResponse = request.get(ClientResponse.class);
 		validateResponse(clientResponse);
-		//EzLocationsResponse response = clientResponse.getEntity(EzLocationsResponse.class);
 		String response = clientResponse.getEntity(String.class);
 		EzLocationsResponse responseObj = null;
 		
@@ -560,7 +557,7 @@ public class EzClient {
 			responseObj = jsonObjectMapper.readValue(response, EzLocationsResponse.class);
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed");
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
 		}
 		
 		return responseObj;
@@ -583,7 +580,7 @@ public class EzClient {
 			responseObj = jsonObjectMapper.readValue(response, EzContentTypeResponse.class);
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed");
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
 		}
 		
 		return responseObj;
@@ -614,12 +611,12 @@ public class EzClient {
 	 */
 	private void validateResponse(ClientResponse clientResponse) throws EzPublishConnectorException {
 		int responseStatus = clientResponse.getStatus();
-		LOGGER.info(String.format("Getting response with status %s", responseStatus));
+		LOGGER.info(EzConstant.EZPUBLISH_API + " - " + clientResponse.toString());
 		
 		if(responseStatus == 500 ){
-			throw new EzPublishConnectorException("EzPublish - internal server error");
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API + " - internal server error");
 		} else if(responseStatus != 200){
-			throw new EzPublishConnectorException("EzPublish - failed with status: " + responseStatus);
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API + " - failed with status: " + responseStatus);
 		}
 	}
 	
@@ -640,7 +637,7 @@ public class EzClient {
 			}
 		} catch (ClassCastException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed: " + e.getMessage());
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED + ": " + e.getMessage());
 		}
 		return result;
 	}
@@ -685,7 +682,7 @@ public class EzClient {
 			}
 		} catch (ClassCastException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed: " + e.getMessage());
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED + ": " + e.getMessage());
 		}
 		return result;
 	}
@@ -711,7 +708,7 @@ public class EzClient {
 			}
 		} catch (ClassCastException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed: " + e.getMessage());
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED + ": " + e.getMessage());
 		}
 		return result;
 	}
@@ -733,7 +730,7 @@ public class EzClient {
 			}
 		} catch (ClassCastException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed: " + e.getMessage());
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED + ": " + e.getMessage());
 		}
 		return result;
 	}
@@ -755,7 +752,7 @@ public class EzClient {
 			}
 		} catch (ClassCastException e) {
 			LOGGER.error(e.getMessage(), e);
-			throw new EzPublishConnectorException("EzPublish - response processing failed: " + e.getMessage());
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED + ": " + e.getMessage());
 		}
 		return result;
 	}

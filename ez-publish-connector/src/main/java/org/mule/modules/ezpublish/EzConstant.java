@@ -28,4 +28,7 @@ public class EzConstant {
 	public static final String TAX_PROFILE = "tax_profile";
 	public static final String TYPE = "type";
 	public static final String LEGACY_CODES = "legacy_codes";
+	
+	public static final String EZPUBLISH_API = "ezPublishAPI"; 
+	public static final String EZPUBLISH_API_RESPONSE_PROCESSING_FAILED = "ezPublishAPI - response processing failed";
 }
