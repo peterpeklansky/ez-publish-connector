@@ -13,6 +13,12 @@ public class RatecardItem implements Serializable {
 	private String id;
 	
 	@JsonProperty
+	private String rateCardHeaderCode;
+	
+	@JsonProperty
+	private String rateCardHeaderName;
+	
+	@JsonProperty
 	private String code;
 	
 	@JsonProperty
@@ -150,6 +156,22 @@ public class RatecardItem implements Serializable {
 
 	public void setPriceZoneRegion(String priceZoneRegion) {
 		this.priceZoneRegion = priceZoneRegion;
+	}
+
+	public String getRateCardHeaderCode() {
+		return rateCardHeaderCode;
+	}
+
+	public void setRateCardHeaderCode(String rateCardHeaderCode) {
+		this.rateCardHeaderCode = rateCardHeaderCode;
+	}
+
+	public String getRateCardHeaderName() {
+		return rateCardHeaderName;
+	}
+
+	public void setRateCardHeaderName(String rateCardHeaderName) {
+		this.rateCardHeaderName = rateCardHeaderName;
 	}
 	
 	

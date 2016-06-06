@@ -166,14 +166,14 @@ public class EzClient {
 	 */
 	public Map<String, Object> getRatecardItemById(String id) throws EzPublishConnectorException {
 		Map<String, Object> map = new HashMap<String, Object>();
-		// first get data for RatecardItem
-		EzContentObjectsResponse response = getObjectFromEz(id);
+		// first get data for RatecardItem itself
+		EzContentObjectsResponse rateCardItemObject = getObjectFromEz(id);
 		
 		try {
-			if (response != null) {
+			if (rateCardItemObject != null) {
 				RatecardItem ratecardItem = new RatecardItem();
-				ratecardItem.setId(String.valueOf(response.getContent().getId()));
-				List<EzField> ezFields = response.getContent().getCurrentVersion().getVersion().getFields().getField();
+				ratecardItem.setId(String.valueOf(rateCardItemObject.getContent().getId()));
+				List<EzField> ezFields = rateCardItemObject.getContent().getCurrentVersion().getVersion().getFields().getField();
 				int followUpTermId = -1;
 				int priceZoneId = -1;
 				int productTermId = -1;
@@ -198,6 +198,27 @@ public class EzClient {
 						productTermId = getIntegerFieldMapValue(field, Map.class, EzConstant.DESTINATION_CONTENT_ID);
 					}						
 				}
+				
+				// get data for Ratecard (we need header fields)
+				// the only reference from RatacardItem back to Ratecard is from "MainLocation path"
+				String rateCardItemMainLocationHref = rateCardItemObject.getContent().getMainLocation().getHref();
+				// filter only "parent" (Ratecard node_id) from path
+				String ratecardItemLocationPath = rateCardItemMainLocationHref.replace(API_URL_PATH, "");
+				ratecardItemLocationPath = ratecardItemLocationPath.substring(0, ratecardItemLocationPath.lastIndexOf("/"));
+				EzLocationsResponse ratecardEzLocation = getLocationFromEz(ratecardItemLocationPath);
+				int ratecardId = ratecardEzLocation.getLocation().getConetntInfo().getContent().getId();
+				EzContentObjectsResponse ratecardObject = getObjectFromEz(String.valueOf(ratecardId));
+				if (ratecardObject != null) {
+					List<EzField> ezFieldsRatecard = ratecardObject.getContent().getCurrentVersion().getVersion().getFields().getField();
+					for (EzField field : ezFieldsRatecard) {
+						if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.NAME)) {
+							ratecardItem.setRateCardHeaderName(getFieldValue(field, String.class));
+						} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.CODE)) {
+							ratecardItem.setRateCardHeaderCode(getFieldValue(field, String.class));
+						}
+					}
+				}
+				
 				// get data for FollowupTerm
 				int followUpTermUnitFieldKey = -1;
 				if (followUpTermId != -1) {
