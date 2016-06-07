@@ -50,7 +50,9 @@ public class EzClient {
 	private transient final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
 	private static final String API_URL_PATH = "/api/ezp/v2";
+	private static final String ROOT_GET_PATH = "/";
 	private static final String CONTENT_OBJECT_GET_PATH = "/content/objects/";
+	private static final String HTTP_APPLICATION_VND_EZ_API_ROOT_JSON = "application/vnd.ez.api.Root+json";
 	private static final String HTTP_APPLICATION_VND_EZ_API_CONTENT_JSON = "application/vnd.ez.api.Content+json";
 	private static final String HTTP_APPLICATION_VND_EZ_API_CONTENT_TYPE_LIST_JSON = "application/vnd.ez.api.ContentTypeList+json";
 	private static final String HTTP_APPLICATION_VND_EZ_API_LOCATION_JSON = "application/vnd.ez.api.Location+json";
@@ -514,6 +516,20 @@ public class EzClient {
 		
 		return map;
 	}
+	/**
+	 * Method used for testing the connection. It retrieves root resources.
+	 * 
+	 * @return
+	 * @throws EzPublishConnectorException
+	 */
+	public String testConnection() throws EzPublishConnectorException {
+		String path = ROOT_GET_PATH;		
+		Builder request = webResource.path(path).header(HTTP_ACCEPT, HTTP_APPLICATION_VND_EZ_API_ROOT_JSON);
+		ClientResponse clientResponse = request.get(ClientResponse.class);
+		validateResponse(clientResponse);
+		String response = clientResponse.getEntity(String.class);
+		return response;
+	}
 	
 	/**
 	 * Helper method to make a call to EzPublish Standard API "content/objects" endpoint.
@@ -756,5 +772,5 @@ public class EzClient {
 		}
 		return result;
 	}
-	
+
 }
