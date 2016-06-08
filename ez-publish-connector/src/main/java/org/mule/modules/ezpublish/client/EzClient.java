@@ -24,6 +24,7 @@ import org.mule.modules.ezpublish.model.EzContentTypeResponse;
 import org.mule.modules.ezpublish.model.EzField;
 import org.mule.modules.ezpublish.model.EzFieldDefinition;
 import org.mule.modules.ezpublish.model.EzLocationsResponse;
+import org.mule.modules.ezpublish.model.response.PriceZone;
 import org.mule.modules.ezpublish.model.response.Product;
 import org.mule.modules.ezpublish.model.response.ProductTerm;
 import org.mule.modules.ezpublish.model.response.Ratecard;
@@ -482,6 +483,69 @@ public class EzClient {
 				
 				// build final map
 				map = convertJsonPojoToMap(ratecardItem);
+			}
+		} catch (IOException | NullPointerException e) {
+			LOGGER.error(e.getMessage(), e);
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
+		}
+		
+		return map;
+	}
+	
+	/**
+	 * Method for retrieving PriceZone data from EzPublish.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws EzPublishConnectorException
+	 */
+	public Map<String, Object> getPriceZoneById(String id) throws EzPublishConnectorException {
+		Map<String, Object> map = new HashMap<String, Object>();
+		EzContentObjectsResponse priceZoneObject = getObjectFromEz(id);
+		
+		try {
+			if (priceZoneObject != null) {
+				PriceZone priceZone = new PriceZone();
+				int priceZoneCurrencyFieldKey = -1;
+				int priceZoneDispatchFieldKey = -1;
+				int priceZoneRegionFieldKey = -1;
+				priceZone.setId(String.valueOf(priceZoneObject.getContent().getId()));
+				List<EzField> ezFieldsPriceZone = priceZoneObject.getContent().getCurrentVersion().getVersion().getFields().getField();
+				for (EzField field : ezFieldsPriceZone) {
+					if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.NAME)) {
+						priceZone.setName(getFieldValue(field, String.class));
+					} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.CURRENCY)) {
+						priceZoneCurrencyFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
+					} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.DISPATCH)) {
+						priceZoneDispatchFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
+					} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.REGION)) {
+						priceZoneRegionFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
+					} 
+				}
+				String contentTypePath = priceZoneObject.getContent().getContentType().getHref();
+				String path = contentTypePath.replace(API_URL_PATH, "");
+				// get field definitions and find "currency", "dispatch" and "region"
+				EzContentTypeResponse contentTypeObject = getContentTypeFromEz(path);
+				if (contentTypeObject != null) {
+					List<EzFieldDefinition> ezFieldDefinitions = contentTypeObject.getContentType().getFieldDefinitions().getFieldDefinition();
+					for (EzFieldDefinition fieldDefinition: ezFieldDefinitions) {
+						if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.CURRENCY) && priceZoneCurrencyFieldKey != -1) {
+							Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
+							ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
+							priceZone.setCurrency(options.get(priceZoneCurrencyFieldKey));
+						} else if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.DISPATCH) && priceZoneDispatchFieldKey != -1) {
+							Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
+							ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
+							priceZone.setDispatch(options.get(priceZoneDispatchFieldKey));
+						} else if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.REGION) && priceZoneRegionFieldKey != -1) {
+							Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
+							ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
+							priceZone.setRegion(options.get(priceZoneRegionFieldKey));
+						}
+					}
+				}				
+				
+				map = convertJsonPojoToMap(priceZone);
 			}
 		} catch (IOException | NullPointerException e) {
 			LOGGER.error(e.getMessage(), e);

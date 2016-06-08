@@ -34,6 +34,11 @@ public class EzPublishConnector {
     }
     
     @Processor
+    public Map<String, Object> getPriceZoneById(String id) throws EzPublishConnectorException {
+        return client.getPriceZoneById(id);
+    }
+    
+    @Processor
     public Map<String, Object> getRawContentObjectById(String id) throws EzPublishConnectorException {
         return client.getRawContentObject(id);
     }
