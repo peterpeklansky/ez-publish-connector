@@ -24,6 +24,8 @@ import org.mule.modules.ezpublish.model.EzContentTypeResponse;
 import org.mule.modules.ezpublish.model.EzField;
 import org.mule.modules.ezpublish.model.EzFieldDefinition;
 import org.mule.modules.ezpublish.model.EzLocationsResponse;
+import org.mule.modules.ezpublish.model.EzPriceZone;
+import org.mule.modules.ezpublish.model.EzPriceZoneCountry;
 import org.mule.modules.ezpublish.model.response.PriceZone;
 import org.mule.modules.ezpublish.model.response.Product;
 import org.mule.modules.ezpublish.model.response.ProductTerm;
@@ -51,6 +53,8 @@ public class EzClient {
 	private transient final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
 	private static final String API_URL_PATH = "/api/ezp/v2";
+	private static final String CUSTOM_API_URL_PATH = "/api/v1";
+	private static final String CUSTOM_CONTENT_PRICEZONES_GET_PATH = "/content/pricezones/%s.json";
 	private static final String ROOT_GET_PATH = "/";
 	private static final String CONTENT_OBJECT_GET_PATH = "/content/objects/";
 	private static final String HTTP_APPLICATION_VND_EZ_API_ROOT_JSON = "application/vnd.ez.api.Root+json";
@@ -62,10 +66,13 @@ public class EzClient {
 	private static final String HTTPS = "https";
 	
     private static ObjectMapper jsonObjectMapper;
+    private Client client;
+    private ConnectorConfig connectorConfig;
 	private WebResource webResource;
 	private SimpleDateFormat df;
 	
 	public EzClient(ConnectorConfig connectorConfig) {
+		this.connectorConfig = connectorConfig;
 		df = new SimpleDateFormat(DATE_FORMAT);
         ClientConfig clientConfig = new DefaultClientConfig();
         
@@ -96,7 +103,7 @@ public class EzClient {
 		jsonObjectMapper = new ObjectMapper();
 		jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			
-		Client client = Client.create(clientConfig);
+		client = Client.create(clientConfig);
 		// authentication
 		client.addFilter(new HTTPBasicAuthFilter(connectorConfig.getUsername(), connectorConfig.getPassword()));
 		this.webResource = client.resource(connectorConfig.getProtocol() + "://"+ connectorConfig.getHost() + API_URL_PATH);
@@ -297,6 +304,15 @@ public class EzClient {
 									ratecardItem.setPriceZoneRegion(options.get(priceZoneRegionFieldKey));
 								}
 							}
+						}
+						// get countries
+						EzPriceZone priceZone = getPriceZoneDetails(String.valueOf(priceZoneId));
+						if (priceZone != null) {
+							List<String> priceZoneCountries = new ArrayList<String>();
+							for (EzPriceZoneCountry country : priceZone.getCountries()) {
+								priceZoneCountries.add(country.getName());
+							}
+							ratecardItem.setPriceZoneCountries(priceZoneCountries);
 						}
 					}
 				}
@@ -543,7 +559,16 @@ public class EzClient {
 							priceZone.setRegion(options.get(priceZoneRegionFieldKey));
 						}
 					}
-				}				
+				}	
+				// get countries
+				EzPriceZone ezPriceZone = getPriceZoneDetails(String.valueOf(id));
+				if (ezPriceZone != null) {
+					List<String> priceZoneCountries = new ArrayList<String>();
+					for (EzPriceZoneCountry country : ezPriceZone.getCountries()) {
+						priceZoneCountries.add(country.getName());
+					}
+					priceZone.setCountries(priceZoneCountries);
+				}
 				
 				map = convertJsonPojoToMap(priceZone);
 			}
@@ -658,6 +683,24 @@ public class EzClient {
 		
 		try {
 			responseObj = jsonObjectMapper.readValue(response, EzContentTypeResponse.class);
+		} catch (IOException e) {
+			LOGGER.error(e.getMessage(), e);
+			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
+		}
+		
+		return responseObj;
+	}
+	
+	private EzPriceZone getPriceZoneDetails(String id) throws EzPublishConnectorException {
+		WebResource webResourceCustom = client.resource(connectorConfig.getProtocol() + "://"+ connectorConfig.getHost() + CUSTOM_API_URL_PATH);
+		String path = String.format(CUSTOM_CONTENT_PRICEZONES_GET_PATH, id);		
+		ClientResponse clientResponse = webResourceCustom.path(path).get(ClientResponse.class);
+		validateResponse(clientResponse);
+		String response = clientResponse.getEntity(String.class);
+		EzPriceZone responseObj = null;
+		
+		try {
+			responseObj = jsonObjectMapper.readValue(response, EzPriceZone.class);
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
 			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);

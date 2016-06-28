@@ -2,6 +2,7 @@ package org.mule.modules.ezpublish.model.response;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -53,6 +54,9 @@ public class RatecardItem implements Serializable {
 	
 	@JsonProperty
 	private String priceZoneRegion;
+	
+	@JsonProperty
+	private List<String> priceZoneCountries;
 
 	public String getId() {
 		return id;
@@ -172,6 +176,14 @@ public class RatecardItem implements Serializable {
 
 	public void setRateCardHeaderName(String rateCardHeaderName) {
 		this.rateCardHeaderName = rateCardHeaderName;
+	}
+
+	public List<String> getPriceZoneCountries() {
+		return priceZoneCountries;
+	}
+
+	public void setPriceZoneCountries(List<String> priceZoneCountries) {
+		this.priceZoneCountries = priceZoneCountries;
 	}
 	
 	

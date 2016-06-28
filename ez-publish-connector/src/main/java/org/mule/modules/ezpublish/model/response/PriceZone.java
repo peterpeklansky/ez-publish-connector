@@ -1,6 +1,7 @@
 package org.mule.modules.ezpublish.model.response;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -22,6 +23,9 @@ public class PriceZone implements Serializable {
 	
 	@JsonProperty
 	private String region;
+	
+	@JsonProperty
+	private List<String> countries;
 
 	public String getId() {
 		return id;
@@ -61,6 +65,14 @@ public class PriceZone implements Serializable {
 
 	public void setRegion(String region) {
 		this.region = region;
+	}
+
+	public List<String> getCountries() {
+		return countries;
+	}
+
+	public void setCountries(List<String> countries) {
+		this.countries = countries;
 	}
 	
 }
