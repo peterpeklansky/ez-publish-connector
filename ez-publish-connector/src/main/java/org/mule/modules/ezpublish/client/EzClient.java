@@ -266,54 +266,17 @@ public class EzClient {
 				
 				// get data for PriceZone
 				if (priceZoneId != -1) {
-					EzContentObjectsResponse priceZoneObject = getObjectFromEz(String.valueOf(priceZoneId));
-					int priceZoneCurrencyFieldKey = -1;
-					int priceZoneDispatchFieldKey = -1;
-					int priceZoneRegionFieldKey = -1;
-					if (priceZoneObject != null) {
-						List<EzField> ezFieldsPriceZone = priceZoneObject.getContent().getCurrentVersion().getVersion().getFields().getField();
-						for (EzField field : ezFieldsPriceZone) {
-							if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.NAME)) {
-								ratecardItem.setPriceZoneName(getFieldValue(field, String.class));
-							} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.CURRENCY)) {
-								priceZoneCurrencyFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
-							} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.DISPATCH)) {
-								priceZoneDispatchFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
-							} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.REGION)) {
-								priceZoneRegionFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
-							} 
+					EzPriceZone priceZone = getPriceZoneDetails(String.valueOf(priceZoneId));
+					if (priceZone != null) {
+						List<String> priceZoneCountries = new ArrayList<String>();
+						for (EzPriceZoneCountry country : priceZone.getCountries()) {
+							priceZoneCountries.add(country.getName());
 						}
-						String contentTypePath = priceZoneObject.getContent().getContentType().getHref();
-						String path = contentTypePath.replace(API_URL_PATH, "");
-						// get field definitions and find "currency", "dispatch" and "region"
-						EzContentTypeResponse contentTypeObject = getContentTypeFromEz(path);
-						if (contentTypeObject != null) {
-							List<EzFieldDefinition> ezFieldDefinitions = contentTypeObject.getContentType().getFieldDefinitions().getFieldDefinition();
-							for (EzFieldDefinition fieldDefinition: ezFieldDefinitions) {
-								if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.CURRENCY) && priceZoneCurrencyFieldKey != -1) {
-									Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
-									ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
-									ratecardItem.setPriceZoneCurrency(options.get(priceZoneCurrencyFieldKey));
-								} else if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.DISPATCH) && priceZoneDispatchFieldKey != -1) {
-									Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
-									ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
-									ratecardItem.setPriceZoneDispatch(options.get(priceZoneDispatchFieldKey));
-								} else if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.REGION) && priceZoneRegionFieldKey != -1) {
-									Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
-									ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
-									ratecardItem.setPriceZoneRegion(options.get(priceZoneRegionFieldKey));
-								}
-							}
-						}
-						// get countries
-						EzPriceZone priceZone = getPriceZoneDetails(String.valueOf(priceZoneId));
-						if (priceZone != null) {
-							List<String> priceZoneCountries = new ArrayList<String>();
-							for (EzPriceZoneCountry country : priceZone.getCountries()) {
-								priceZoneCountries.add(country.getName());
-							}
-							ratecardItem.setPriceZoneCountries(priceZoneCountries);
-						}
+						ratecardItem.setPriceZoneName(priceZone.getName());
+						ratecardItem.setPriceZoneCurrency(priceZone.getCurrency());
+						ratecardItem.setPriceZoneDispatch(priceZone.getDispatch());
+						ratecardItem.setPriceZoneRegion(priceZone.getRegion());
+						ratecardItem.setPriceZoneCountries(priceZoneCountries);
 					}
 				}
 				
@@ -517,61 +480,23 @@ public class EzClient {
 	 */
 	public Map<String, Object> getPriceZoneById(String id) throws EzPublishConnectorException {
 		Map<String, Object> map = new HashMap<String, Object>();
-		EzContentObjectsResponse priceZoneObject = getObjectFromEz(id);
+		PriceZone priceZoneResp = new PriceZone();
 		
 		try {
-			if (priceZoneObject != null) {
-				PriceZone priceZone = new PriceZone();
-				int priceZoneCurrencyFieldKey = -1;
-				int priceZoneDispatchFieldKey = -1;
-				int priceZoneRegionFieldKey = -1;
-				priceZone.setId(String.valueOf(priceZoneObject.getContent().getId()));
-				List<EzField> ezFieldsPriceZone = priceZoneObject.getContent().getCurrentVersion().getVersion().getFields().getField();
-				for (EzField field : ezFieldsPriceZone) {
-					if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.NAME)) {
-						priceZone.setName(getFieldValue(field, String.class));
-					} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.CURRENCY)) {
-						priceZoneCurrencyFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
-					} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.DISPATCH)) {
-						priceZoneDispatchFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
-					} else if (field.getFieldDefinitionIdentifier().equalsIgnoreCase(EzConstant.REGION)) {
-						priceZoneRegionFieldKey = getSingleKeyForFieldDefinition(field); // only 1 selection allowed
-					} 
+			EzPriceZone priceZone = getPriceZoneDetails(String.valueOf(id));
+			if (priceZone != null) {
+				List<String> priceZoneCountries = new ArrayList<String>();
+				for (EzPriceZoneCountry country : priceZone.getCountries()) {
+					priceZoneCountries.add(country.getName());
 				}
-				String contentTypePath = priceZoneObject.getContent().getContentType().getHref();
-				String path = contentTypePath.replace(API_URL_PATH, "");
-				// get field definitions and find "currency", "dispatch" and "region"
-				EzContentTypeResponse contentTypeObject = getContentTypeFromEz(path);
-				if (contentTypeObject != null) {
-					List<EzFieldDefinition> ezFieldDefinitions = contentTypeObject.getContentType().getFieldDefinitions().getFieldDefinition();
-					for (EzFieldDefinition fieldDefinition: ezFieldDefinitions) {
-						if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.CURRENCY) && priceZoneCurrencyFieldKey != -1) {
-							Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
-							ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
-							priceZone.setCurrency(options.get(priceZoneCurrencyFieldKey));
-						} else if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.DISPATCH) && priceZoneDispatchFieldKey != -1) {
-							Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
-							ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
-							priceZone.setDispatch(options.get(priceZoneDispatchFieldKey));
-						} else if (fieldDefinition.getIdentifier().equalsIgnoreCase(EzConstant.REGION) && priceZoneRegionFieldKey != -1) {
-							Map<String, Object> fieldMap = (Map<String, Object>)fieldDefinition.getFieldSettings();
-							ArrayList<String> options = (ArrayList<String>)fieldMap.get(EzConstant.OPTIONS);
-							priceZone.setRegion(options.get(priceZoneRegionFieldKey));
-						}
-					}
-				}	
-				// get countries
-				EzPriceZone ezPriceZone = getPriceZoneDetails(String.valueOf(id));
-				if (ezPriceZone != null) {
-					List<String> priceZoneCountries = new ArrayList<String>();
-					for (EzPriceZoneCountry country : ezPriceZone.getCountries()) {
-						priceZoneCountries.add(country.getName());
-					}
-					priceZone.setCountries(priceZoneCountries);
-				}
-				
-				map = convertJsonPojoToMap(priceZone);
+				priceZoneResp.setName(priceZone.getName());
+				priceZoneResp.setCurrency(priceZone.getCurrency());
+				priceZoneResp.setDispatch(priceZone.getDispatch());
+				priceZoneResp.setRegion(priceZone.getRegion());
+				priceZoneResp.setCountries(priceZoneCountries);
 			}
+			map = convertJsonPojoToMap(priceZoneResp);
+			
 		} catch (IOException | NullPointerException e) {
 			LOGGER.error(e.getMessage(), e);
 			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED);
@@ -878,6 +803,24 @@ public class EzClient {
 			throw new EzPublishConnectorException(EzConstant.EZPUBLISH_API_RESPONSE_PROCESSING_FAILED + ": " + e.getMessage());
 		}
 		return result;
+	}
+	
+	public static void main(String[] args) throws EzPublishConnectorException  {
+		ConnectorConfig connectorConfig = new ConnectorConfig();
+		connectorConfig.setProtocol("https");
+		connectorConfig.setHost("qualif.caseproject-ezpf.dev.kaliop.ca");
+		//connectorConfig.setHost("ezpub.p.aws.economist.com");
+		connectorConfig.setUsername("dev");
+		connectorConfig.setPassword("nov@ctiv3");
+		EzClient ezClient = new EzClient(connectorConfig);
+		//System.out.println(ezClient.test());
+		//System.out.println(ezClient.getContentObject("1004"));
+		//System.out.println(ezClient.getRatecardById("4678"));
+		long start = System.currentTimeMillis();
+		System.out.println(ezClient.getRatecardItemById("2604"));
+		//System.out.println(ezClient.getPriceZoneById("118"));
+		long end = System.currentTimeMillis();
+		System.out.println("Call duration = " + (end - start)/1000f + " seconds");
 	}
 
 }

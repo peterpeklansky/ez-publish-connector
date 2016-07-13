@@ -18,6 +18,15 @@ public class EzPriceZone implements Serializable {
 	private String name;
 	
 	@JsonProperty
+	private String currency;
+	
+	@JsonProperty
+	private String region;
+	
+	@JsonProperty
+	private String dispatch;
+	
+	@JsonProperty
 	private List<EzPriceZoneCountry> countries;
 
 	public String getId() {
@@ -43,6 +52,29 @@ public class EzPriceZone implements Serializable {
 	public void setCountries(List<EzPriceZoneCountry> countries) {
 		this.countries = countries;
 	}
-	
-	
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	public String getDispatch() {
+		return dispatch;
+	}
+
+	public void setDispatch(String dispatch) {
+		this.dispatch = dispatch;
+	}
+		
 }
